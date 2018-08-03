@@ -1,5 +1,3 @@
-import javax.security.auth.kerberos.KerberosTicket;
-
 /**
  * Forward Kinematics Class.
  *
@@ -144,6 +142,13 @@ public class ForwardKinematics {
                 + icc[1] );
     }
 
+    /**
+     * Calculate ICC Method.
+     *
+     * Calculates the coordinates of the Instantaneous Center of Curvature
+     *
+     * @return Index 0 is the X coordinate of the ICC; Index 1 is the Y coordinate of the ICC
+     */
     private double[] calculateICC() {
 
         //
@@ -156,6 +161,13 @@ public class ForwardKinematics {
         };
     }
 
+    /**
+     * Calculate R Method.
+     *
+     * Calculates the radius from the wheelBase center to the Instantaneous Center of Curvature
+     *
+     * @return The radius of the turning arc.
+     */
     private double calculateR(){
 
         //     l (Vl + Vr)
@@ -167,6 +179,13 @@ public class ForwardKinematics {
 
     }
 
+    /**
+     * Calculate Omega Method.
+     *
+     * Calculates the average velocity travelled by both sides. Necessary for other calculations
+     *
+     * @return The average velocity travelled by both sides of the drivetrain.
+     */
     private double calculateOmega(){
 
         //         Vr - Vl
