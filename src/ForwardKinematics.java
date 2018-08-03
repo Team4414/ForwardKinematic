@@ -1,3 +1,5 @@
+import javax.security.auth.kerberos.KerberosTicket;
+
 /**
  * Forward Kinematics Class.
  *
@@ -98,6 +100,7 @@ public class ForwardKinematics {
      * Get Heading Method.
      * @return The current heading of the robot.
      */
+    @Deprecated
     public double getHeading(){ return mHeading; }
 
 
@@ -109,8 +112,16 @@ public class ForwardKinematics {
      * @return The change in X Position.
      */
     private double getDeltaX(){
-        //Check this link for the equations:
-        return (kRadius/2) * (getLeftWheelVelocity() + getRightWheelVelocity()) * Math.cos(mHeading);
+
+        //
+        // xDot = cos(omega * dt)(x - ICCx) - sin(omega * dt)(y - ICCy) + ICCx
+        //
+
+        double[] icc = calculateICC();
+
+        return (  Math.cos(calculateOmega() * K_TIMESTEP) * (mXpos - icc[0])
+                - Math.sin(calculateOmega() * K_TIMESTEP) * (mYpos - icc[1])
+                + icc[0] );
     }
 
     /**
@@ -121,8 +132,48 @@ public class ForwardKinematics {
      * @return The change in Y Position.
      */
     private double getDeltaY(){
-        //Check this link for the equations:
-        return (kRadius/2) * (getLeftWheelVelocity() + getRightWheelVelocity()) * Math.sin(mHeading);
+
+        //
+        // yDot = sin(omega * dt)(x - ICCx) + cos(omega * dt)(y - ICCy) + ICCy
+        //
+
+        double[] icc = calculateICC();
+
+        return (  Math.sin(calculateOmega() * K_TIMESTEP) * (mXpos - icc[0])
+                - Math.cos(calculateOmega() * K_TIMESTEP) * (mYpos - icc[1])
+                + icc[1] );
+    }
+
+    private double[] calculateICC() {
+
+        //
+        // ICC = [x - R sin(theta), y + R cos(theta)]
+        //
+
+        return new double[]{
+                mXpos - calculateR() * Math.sin(mHeading),
+                mYpos + calculateR() * Math.cos(mHeading)
+        };
+    }
+
+    private double calculateR(){
+
+        //     l (Vl + Vr)
+        // R = ------------
+        //      2(Vr - Vl)
+
+        return ((kWheelBase * (getLeftWheelVelocity() + getRightWheelVelocity())) /
+                2 * (getRightWheelVelocity() - getLeftWheelVelocity()));
+
+    }
+
+    private double calculateOmega(){
+
+        //         Vr - Vl
+        // omega = -------
+        //            l
+
+        return ((getRightWheelVelocity() - getLeftWheelVelocity()) / kWheelBase);
     }
 
     /**
@@ -132,6 +183,7 @@ public class ForwardKinematics {
      *
      * @return The change in heading.
      */
+    @Deprecated
     private double getDeltaHeading(){
         return (kRadius/kWheelBase) * (getRightWheelVelocity() - getLeftWheelVelocity());
     }
